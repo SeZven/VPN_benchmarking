@@ -1,0 +1,37 @@
+---
+- name: Install the software Rosenpass from GitHub
+  hosts: all
+
+  tasks:
+  - name: check latest Rosenpass
+    uri:
+      url: https://api.github.com/repos/rosenpass/rosenpass/releases/latest
+      return_content: true
+    register: rosenpass_latest
+
+  - name: "install Rosenpass {{ rosenpass_latest.json.tag_name }}"
+    loop: "{{ rosenpass_latest.json.assets }}"
+    when: "'rosenpass-x86_64-linux-' in item.name"
+    unarchive:
+      remote_src: yes
+      src: "{{ item.browser_download_url }}"
+      dest: "{{ ansible_env.HOME }}/"
+      keep_newer: yes
+
+  - name: make rosenpass globally available
+    copy:
+      src: "{{ ansible_env.HOME }}/bin/rosenpass"
+      remote_src: true
+      dest: "/bin/"
+      mode: a+x
+    become: true
+    become_user: root
+
+  - name: make rp globally available
+    copy:
+      src: "{{ ansible_env.HOME }}/bin/rp"
+      remote_src: true
+      dest: "/bin/"
+      mode: a+x
+    become: true
+    become_user: root
