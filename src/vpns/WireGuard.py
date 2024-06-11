@@ -10,7 +10,7 @@ import src.messages as messages
 from src.vpns.VPN import VPN
 
 key_path = "wg-keys"
-opening_port = 9999
+opening_port = 51820
 
 
 class WireGuard(VPN):
@@ -39,9 +39,9 @@ class WireGuard(VPN):
 
         messages.print_log("Starting key exchange processes...")
         if self.role == "server":
-            self.process = self.__start_rosenpass_key_exchange_on_server()
+            self.process = self.__start_wg_key_exchange_on_server()
         elif self.role == "client":
-            self.process = self.__start_rosenpass_key_exchange_on_client()
+            self.process = self.__start_wg_key_exchange_on_client()
         else:
             raise Exception("Unexpected role")
 
@@ -67,9 +67,9 @@ class WireGuard(VPN):
 
     def generate_keys(self) -> bool:
         """
-        Generates the necessary keys for WireGuard. Creates or uses existing rp-keys directory,
-        creates [role].rosenpass-secret and [role].rosenpass-public directories for Wireguard and WireGuard secret
-        and public keys. If key directories already exist, asks for overwriting, otherwise keeps existing keys.
+        Generates the necessary keys for WireGuard. Creates or uses existing wg-keys directory,
+        creates [role].wg-secret and [role].wg-public directories for Wireguard and WireGuard secret.
+        If key directories already exist, asks for overwriting, otherwise keeps existing keys.
         :return: True for success, False otherwise
         """
         messages.print_log(
@@ -167,7 +167,7 @@ class WireGuard(VPN):
 
         return True
 
-    def __start_rosenpass_key_exchange_on_server(self):
+    def __start_wg_key_exchange_on_server(self):
         """
         Executes the command for starting the server key exchange.
         :return: True for success, False otherwise
@@ -204,7 +204,7 @@ class WireGuard(VPN):
 
         return process
 
-    def __start_rosenpass_key_exchange_on_client(self):
+    def __start_wg_key_exchange_on_client(self):
         """
         Executes the command for starting the client key exchange.
         :return: True for success, False otherwise
