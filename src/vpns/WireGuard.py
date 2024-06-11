@@ -21,7 +21,7 @@ class WireGuard(VPN):
 
     def __init__(self, role) -> None:
         """
-        Calls VPNs __init__. Additionally, sets the WireGuard interface name to 'rosenpass0' and the address of the
+        Calls VPNs __init__. Additionally, sets the WireGuard interface name to 'wg0' and the address of the
         server to 'fe80::1'.
         :param role: role of the host
         """
@@ -179,19 +179,22 @@ class WireGuard(VPN):
 
         try:
             process = subprocess.Popen(
+                #sudo rp exchange server.rosenpass-secret dev rosenpass0 listen 192.168.0.1:9999 peer client.rosenpass-public allowed-ips fe80::/64
+                #wg set wg0 listen-port 51820 private-key /path/to/private-key peer ABCDEF... allowed-ips 192.168.88.0/24 endpoint 209.202.254.14:8172
                 [
-                    "sudo",
-                    "rp",
-                    "exchange",
-                    server_sk_dir,  # server keys
-                    "dev",
-                    "rosenpass0",
-                    "listen",
+                    "wg",
+                    "set",
+                    "wg0",
+                    "listen-port",
                     f"{opening_port}",
+                    "private-key",
+                    server_sk_dir,  # server secret key
                     "peer",
-                    client_pk_dir,  # client keys
+                    client_pk_dir,  # client private key
                     "allowed-ips",
                     "fe80::/64",
+                    "endpoint",
+                    f"{self.hosts.client_address}:{opening_port}",    
                 ],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
@@ -211,24 +214,25 @@ class WireGuard(VPN):
         """
         messages.print_log("Starting WireGuard key exchange...")
 
-        client_sk_dir = os.path.join(key_path, "client.rosenpass-secret")
-        server_pk_dir = os.path.join(key_path, "server.rosenpass-public")
+        client_sk_dir = os.path.join(key_path, "client.wg-secret")
+        server_pk_dir = os.path.join(key_path, "server.wg-public")
 
         try:
             process = subprocess.Popen(
                 [
-                    "sudo",
-                    "rp",
-                    "exchange",
-                    client_sk_dir,  # client keys
-                    "dev",
-                    "rosenpass0",
+                    "wg",
+                    "set",
+                    "wg0",
+                    "listen-port",
+                    f"{opening_port}",
+                    "private-key",
+                    client_sk_dir,  # client secret key
                     "peer",
-                    server_pk_dir,  # server keys
-                    "endpoint",
-                    f"{self.hosts.server_address}:{opening_port}",
+                    server_pk_dir,  # server public key
                     "allowed-ips",
                     "fe80::/64",
+                    "endpoint",
+                    f"{self.hosts.server_address}:{opening_port}",    
                 ],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
