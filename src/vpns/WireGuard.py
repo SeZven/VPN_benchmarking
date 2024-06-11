@@ -265,13 +265,12 @@ class WireGuard(VPN):
             try:
                 subprocess.check_output(
                     [
-                        "sudo",
                         "ip",
-                        "a",
+                        "address",
                         "add",
-                        f"fe80::{number}/64",
                         "dev",
-                        "rosenpass0",
+                        "wg0",
+                        f"fe80::{number}/64",
                     ],
                     stderr=subprocess.PIPE,
                 )
