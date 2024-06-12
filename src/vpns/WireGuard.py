@@ -103,7 +103,11 @@ class WireGuard(VPN):
         try:
             subprocess.check_output(
                 #wg genkey | tee privatekey | wg pubkey > publickey 
-                [
+                #wg genkey | tee wg-keys/server.wg-secret | wg pubkey > wg-keys/server.wg-public 
+                #TODO:works when done manually, but not like this:
+                #only generates the empty folder wg-keys and raises unable to generate keys err.#
+                #use of shell features like pipes "|" and redirections ">".
+                """
                     "wg",
                     "genkey",
                     "|",
@@ -116,6 +120,11 @@ class WireGuard(VPN):
                     pk_path
                 ],
                 stderr=subprocess.PIPE,
+                """
+                f"wg genkey | tee {sk_path} | wg pubkey > {pk_path}",
+                shell=True,
+                stderr=subprocess.PIPE,
+                
             )
 
             messages.print_log(f"Generated keys for the {self.role}.")
