@@ -278,7 +278,7 @@ class WireGuard(VPN):
             except subprocess.CalledProcessError:
                 # flushes the interface for the case in which 'RTNETLINK answers: File exists error' occurs
                 subprocess.run(
-                    ["sudo", "ip", "addr", "flush", "dev", "rosenpass0"],
+                    ["sudo", "ip", "addr", "flush", "dev", "wg0"],
                     stderr=subprocess.PIPE,
                     stdout=subprocess.PIPE,
                 )
@@ -304,7 +304,7 @@ class WireGuard(VPN):
             self.process.kill()
 
         try:
-            for line in os.popen("ps ax | grep rosenpass | grep -v grep"):
+            for line in os.popen("ps ax | grep wireguard | grep -v grep"):
                 fields = line.split()
                 if "main.py" not in line:
                     pid = fields[0]
