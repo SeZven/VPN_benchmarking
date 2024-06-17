@@ -22,12 +22,12 @@ class WireGuard(VPN):
     def __init__(self, role) -> None:
         """
         Calls VPNs __init__. Additionally, sets the WireGuard interface name to 'wg0' and the address of the
-        server to 'fe80::1'.
+        server to '10.0.0.1'.
         :param role: role of the host
         """
         super().__init__(role)
         self.interface_name = "wg0"
-        self.open_server_address = "[fe80::1]"
+        self.open_server_address = "[10.0.0.1]"
 
     def open(self) -> bool:
         """
@@ -185,8 +185,18 @@ class WireGuard(VPN):
 
         server_sk_dir = os.path.join(key_path, "server.wg-secret")
         client_pk_dir = os.path.join(key_path, "client.wg-public")
+        client_pk = open(client_pk_dir).readline() # Contains the wg-public-key
 
         try:
+             # Create WireGuard interface
+            subprocess.run(
+                ["ip", "link", "add", "wg0", "type", "wireguard"],
+                check=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
+
+             # Set WireGuard configuration
             process = subprocess.Popen(
                 #sudo rp exchange server.rosenpass-secret dev rosenpass0 listen 192.168.0.1:9999 peer client.rosenpass-public allowed-ips fe80::/64
                 #wg set wg0 listen-port 51820 private-key /path/to/private-key peer ABCDEF... allowed-ips 192.168.88.0/24 endpoint 209.202.254.14:8172
@@ -199,15 +209,23 @@ class WireGuard(VPN):
                     "private-key",
                     server_sk_dir,  # server secret key
                     "peer",
-                    client_pk_dir,  # client private key
+                    client_pk,  # client public key TODO: direct key not directory
                     "allowed-ips",
-                    "fe80::/64",
+                    "10.0.0.2/32",
                     "endpoint",
                     f"{self.hosts.client_address}:{opening_port}",    
                 ],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
             )
+
+             # Bring up the interface
+            subprocess.run(
+                ["ip", "link", "set", "up", "dev", "wg0"],
+                check=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )    
         except Exception as err:
             messages.print_err("WireGuard key exchange was not successful!")
             print(f"{err=}")
@@ -225,8 +243,17 @@ class WireGuard(VPN):
 
         client_sk_dir = os.path.join(key_path, "client.wg-secret")
         server_pk_dir = os.path.join(key_path, "server.wg-public")
+        server_pk = open(server_pk_dir).readline() # Contains the wg-public-key
 
         try:
+             # Create WireGuard interface
+            subprocess.run(
+                ["ip", "link", "add", "wg0", "type", "wireguard"],
+                check=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
+
             process = subprocess.Popen(
                 [
                     "wg",
@@ -237,15 +264,24 @@ class WireGuard(VPN):
                     "private-key",
                     client_sk_dir,  # client secret key
                     "peer",
-                    server_pk_dir,  # server public key
+                    server_pk,  # server public key
                     "allowed-ips",
-                    "fe80::/64",
+                    "10.0.0.1/32",
                     "endpoint",
                     f"{self.hosts.server_address}:{opening_port}",    
                 ],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
             )
+
+             # Bring up the interface
+            subprocess.run(
+                ["ip", "link", "set", "up", "dev", "wg0"],
+                check=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            ) 
+
         except Exception as err:
             messages.print_err("WireGuard key exchange was not successful!")
             print(f"{err=}")
@@ -263,9 +299,9 @@ class WireGuard(VPN):
         """
 
         if self.role == "server":
-            number = 1  # fe80::1
+            number = 1  # 10.0.0.1
         elif self.role == "client":
-            number = 2  # fe80::2
+            number = 2  # 10.0.0.2
         else:
             return False
 
@@ -277,9 +313,9 @@ class WireGuard(VPN):
                         "ip",
                         "address",
                         "add",
+                        f"10.0.0.{number}/32",
                         "dev",
                         "wg0",
-                        f"fe80::{number}/64",
                     ],
                     stderr=subprocess.PIPE,
                 )
