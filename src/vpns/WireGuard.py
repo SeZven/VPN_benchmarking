@@ -40,20 +40,20 @@ class WireGuard(VPN):
         try:
          # Create WireGuard interface TODO: try delete first and then create wg0
             subprocess.run(
-                ["ip", "link", "del", "wg0"],
+                ["sudo","ip", "link", "del", "wg0"],
                 check=True,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
             )
             subprocess.run(
-                ["ip", "link", "add", "wg0", "type", "wireguard"],
+                ["sudo","ip", "link", "add", "wg0", "type", "wireguard"],
                 check=True,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
             )
         except:  #File does not exist
             subprocess.run(
-                ["ip", "link", "add", "wg0", "type", "wireguard"],
+                ["sudo","ip", "link", "add", "wg0", "type", "wireguard"],
                 check=True,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
@@ -215,6 +215,7 @@ class WireGuard(VPN):
                 #sudo rp exchange server.rosenpass-secret dev rosenpass0 listen 192.168.0.1:9999 peer client.rosenpass-public allowed-ips fe80::/64
                 #wg set wg0 listen-port 51820 private-key /path/to/private-key peer ABCDEF... allowed-ips 192.168.88.0/24 endpoint 209.202.254.14:8172
                 [
+                    "sudo",
                     "wg",
                     "set",
                     "wg0",
@@ -255,6 +256,7 @@ class WireGuard(VPN):
         try:
             process = subprocess.Popen(
                 [
+                    "sudo",
                     "wg",
                     "set",
                     "wg0",
@@ -301,6 +303,7 @@ class WireGuard(VPN):
             try:
                 subprocess.check_output(
                     [
+                        "sudo",
                         "ip",
                         "address",
                         "add",
@@ -332,8 +335,8 @@ class WireGuard(VPN):
         
 
          # Bring up the interface
-        subprocess.run(
-            ["ip", "link", "set", "up", "dev", "wg0"],
+        subprocess.run( #sudo ip link set wg0 up 
+            ["sudo", "ip", "link", "set", "wg0", "up"],
             check=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
