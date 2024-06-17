@@ -37,6 +37,29 @@ class WireGuard(VPN):
         messages.print_log("Preparing...")
         self.__clean_up()  # close existing WireGuard processes
 
+        try:
+         # Create WireGuard interface TODO: try delete first and then create wg0
+            subprocess.run(
+                ["ip", "link", "del", "wg0"],
+                check=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
+            subprocess.run(
+                ["ip", "link", "add", "wg0", "type", "wireguard"],
+                check=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
+        except:  #File does not exist
+            subprocess.run(
+                ["ip", "link", "add", "wg0", "type", "wireguard"],
+                check=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
+
+
         messages.print_log("Starting key exchange processes...")
         if self.role == "server":
             self.process = self.__start_wg_key_exchange_on_server()
@@ -187,16 +210,7 @@ class WireGuard(VPN):
         client_pk_dir = os.path.join(key_path, "client.wg-public")
         client_pk = open(client_pk_dir).readline() # Contains the wg-public-key
 
-        try:
-             # Create WireGuard interface
-            subprocess.run(
-                ["ip", "link", "add", "wg0", "type", "wireguard"],
-                check=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-            )
-
-             # Set WireGuard configuration
+        try: # Set WireGuard configuration
             process = subprocess.Popen(
                 #sudo rp exchange server.rosenpass-secret dev rosenpass0 listen 192.168.0.1:9999 peer client.rosenpass-public allowed-ips fe80::/64
                 #wg set wg0 listen-port 51820 private-key /path/to/private-key peer ABCDEF... allowed-ips 192.168.88.0/24 endpoint 209.202.254.14:8172
@@ -218,14 +232,7 @@ class WireGuard(VPN):
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
             )
-
-             # Bring up the interface
-            subprocess.run(
-                ["ip", "link", "set", "up", "dev", "wg0"],
-                check=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-            )    
+    
         except Exception as err:
             messages.print_err("WireGuard key exchange was not successful!")
             print(f"{err=}")
@@ -246,14 +253,6 @@ class WireGuard(VPN):
         server_pk = open(server_pk_dir).readline() # Contains the wg-public-key
 
         try:
-             # Create WireGuard interface
-            subprocess.run(
-                ["ip", "link", "add", "wg0", "type", "wireguard"],
-                check=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-            )
-
             process = subprocess.Popen(
                 [
                     "wg",
@@ -273,14 +272,6 @@ class WireGuard(VPN):
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
             )
-
-             # Bring up the interface
-            subprocess.run(
-                ["ip", "link", "set", "up", "dev", "wg0"],
-                check=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-            ) 
 
         except Exception as err:
             messages.print_err("WireGuard key exchange was not successful!")
@@ -338,6 +329,15 @@ class WireGuard(VPN):
                 f"Too many attempts assigning IP address! Please try again."
             )
             return False
+        
+
+         # Bring up the interface
+        subprocess.run(
+            ["ip", "link", "set", "up", "dev", "wg0"],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
 
         return True
 
