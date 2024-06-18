@@ -59,7 +59,6 @@ class WireGuard(VPN):
                 stderr=subprocess.PIPE,
             )
 
-
         messages.print_log("Starting key exchange processes...")
         if self.role == "server":
             self.process = self.__start_wg_key_exchange_on_server()
@@ -205,10 +204,18 @@ class WireGuard(VPN):
         :return: True for success, False otherwise
         """
         messages.print_log("Starting WireGuard key exchange...")
+        
+
 
         server_sk_dir = os.path.join(key_path, "server.wg-secret")
         client_pk_dir = os.path.join(key_path, "client.wg-public")
-        client_pk = open(client_pk_dir).readline() # Contains the wg-public-key
+        client_pk = open(client_pk_dir).readline().strip() # Contains the wg-public-key, strip() to remove whitespaces
+
+
+        messages.print_log(f"{opening_port}")
+        messages.print_log(server_sk_dir)
+        messages.print_log(client_pk)
+        messages.print_log(f"{self.hosts.client_address}:{opening_port}")
 
         try: # Set WireGuard configuration
             process = subprocess.Popen(
@@ -222,9 +229,9 @@ class WireGuard(VPN):
                     "listen-port",
                     f"{opening_port}",
                     "private-key",
-                    server_sk_dir,  # server secret key
+                    f"{server_sk_dir}",  # server secret key TODO:fopen: No such file or directory
                     "peer",
-                    client_pk,  # client public key TODO: direct key not directory
+                    f"{client_pk}",  # client public key TODO: direct key not directory TODO: Key is not the correct length or format: `6srzHEvffTpujcZ+aJZU/f/qockYsF7SKr9H29/uZGE=                      '
                     "allowed-ips",
                     "10.0.0.2/32",
                     "endpoint",
@@ -233,6 +240,10 @@ class WireGuard(VPN):
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
             )
+
+            stdout, stderr = process.communicate()
+            print(stdout.decode())
+            print(stderr.decode())
     
         except Exception as err:
             messages.print_err("WireGuard key exchange was not successful!")
