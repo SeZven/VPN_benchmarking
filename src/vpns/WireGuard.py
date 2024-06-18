@@ -262,7 +262,7 @@ class WireGuard(VPN):
 
         client_sk_dir = os.path.join(key_path, "client.wg-secret")
         server_pk_dir = os.path.join(key_path, "server.wg-public")
-        server_pk = open(server_pk_dir).readline() # Contains the wg-public-key
+        server_pk = open(server_pk_dir).readline().strip() # Contains the wg-public-key
 
         try:
             process = subprocess.Popen(
