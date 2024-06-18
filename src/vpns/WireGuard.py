@@ -316,7 +316,7 @@ class WireGuard(VPN):
                     [
                         "sudo",
                         "ip",
-                        "address",
+                        "addr",
                         "add",
                         f"10.0.0.{number}/32",
                         "dev",
@@ -348,6 +348,14 @@ class WireGuard(VPN):
          # Bring up the interface
         subprocess.run( #sudo ip link set wg0 up 
             ["sudo", "ip", "link", "set", "wg0", "up"],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+
+         # Add wg route ro route table
+        subprocess.run( #sudo ip link set wg0 up 
+            ["sudo", "ip", "route", "add", "10.0.0.0/24", "dev", "wg0"],
             check=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
