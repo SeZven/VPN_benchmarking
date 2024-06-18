@@ -94,6 +94,8 @@ class HTTP(Exchange):
             if "28" in str(e):  # 28 is the error code for timeouts
                 return 2
             return 1
+        
+        messages.print_log(f"response code: {response_code}")
 
         if response_code == 200:
             messages.print_log("Request successful!")
