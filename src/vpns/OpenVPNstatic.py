@@ -13,7 +13,7 @@ key_path = "openVPNstatic-keys"
 opening_port = 9999
 
 
-class OpenVPN(VPN):
+class OpenVPNstatic(VPN):
     """
     Implements OpenVPN.
     """

@@ -5,6 +5,7 @@ from src.exchanges.HTTP import *
 from src.vpns.NoVPN import *
 from src.vpns.Rosenpass import *
 from src.vpns.WireGuard import *
+from src.vpns.OpenVPNstatic import *
 
 
 class HandleInput:
@@ -109,7 +110,9 @@ class HandleInput:
         elif self.vpn_option == "rosenpass":
             vpn = Rosenpass
         elif self.vpn_option == "wg":
-            vpn = WireGuard    
+            vpn = WireGuard
+        elif self.vpn_option == "openvpnstatic":
+            vpn = OpenVPNstatic    
 
         if self.role == "server":
             self.instance = Server(exchange, vpn)
