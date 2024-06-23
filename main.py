@@ -70,9 +70,9 @@ class HandleInput:
             )
             return False
 
-        if self.vpn_option not in ("novpn", "rosenpass", "wg"):
+        if self.vpn_option not in ("novpn", "rosenpass", "wg", "openvpnstatic"):
             helpers.messages.print_err(
-                "Invalid VPN_OPTION argument. Has to be novpn|rosenpass|wg."
+                "Invalid VPN_OPTION argument. Has to be novpn|rosenpass|wg|openvpnstatic."
             )
             return False
 
