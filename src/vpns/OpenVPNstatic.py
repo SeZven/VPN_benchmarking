@@ -272,6 +272,17 @@ class OpenVPNstatic(VPN):
             )
             return False
         
+        try:
+            # Add openvpn to route table
+            subprocess.run( #sudo ip link set wg0 up 
+                ["sudo", "ip", "route", "add", "10.8.0.0/24", "dev", "tun0"],
+                check=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
+        except:
+            pass
+
 
         return True
 
