@@ -35,13 +35,13 @@ class OpenVPNstatic(VPN):
         :return: True for success, False otherwise
         """
         messages.print_log("Preparing...")
-        self.__clean_up()  # close existing Rosenpass processes
+        self.__clean_up()  # close existing OpenVPN processes
 
         messages.print_log("Starting key exchange processes...")
         if self.role == "server":
-            self.process = self.__start_rosenpass_key_exchange_on_server()
+            self.process = self.__start_openvpn_key_exchange_on_server()
         elif self.role == "client":
-            self.process = self.__start_rosenpass_key_exchange_on_client()
+            self.process = self.__start_openvpn_key_exchange_on_client()
         else:
             raise Exception("Unexpected role")
 
@@ -58,7 +58,7 @@ class OpenVPNstatic(VPN):
 
     def close(self) -> bool:
         """
-        Closes the Rosenpass VPN after cleanup.
+        Closes OpenVPN after cleanup.
         :return: True for success
         """
         self.__clean_up()
@@ -113,14 +113,14 @@ class OpenVPNstatic(VPN):
             return True
         except Exception as err:
             messages.print_err(
-                "Unable to generate keys: Perhaps Rosenpass is not installed or the key set already exists."
+                "Unable to generate keys: Perhaps OpenVPN is not installed or the key set already exists."
             )
             print(f"{err=}")
             return False
 
     def share_pubkeys(self, remote_path) -> bool:
         """
-        Sends the before generated public Wireguard and Rosenpass keys to the other host. Will use the rp-keys/...
+        Sends the before generated public OpenVPN keys to the other host. Will use the rp-keys/...
         directories on the remote host's remote_path. Key directories on the other host must exist.
         :param remote_path: path in which the rp-keys directory exists on the remote host
         :return: True for success, False otherwise
@@ -158,12 +158,12 @@ class OpenVPNstatic(VPN):
 
         return True
 
-    def __start_rosenpass_key_exchange_on_server(self):
+    def __start_openvpn_key_exchange_on_server(self):
         """
         Executes the command for starting the server key exchange.
         :return: True for success, False otherwise
         """
-        messages.print_log("Starting Rosenpass key exchange...")
+        messages.print_log("Starting OpenVPN key exchange...")
 
         key_dir = os.path.join(key_path, "openVPN.key")
         conf_dir = os.path.join(key_path, "openvpn.conf")
@@ -189,12 +189,12 @@ class OpenVPNstatic(VPN):
 
         return process
 
-    def __start_rosenpass_key_exchange_on_client(self):
+    def __start_openvpn_key_exchange_on_client(self):
         """
         Executes the command for starting the client key exchange.
         :return: True for success, False otherwise
         """
-        messages.print_log("Starting Rosenpass key exchange...")
+        messages.print_log("Starting OpenVPN key exchange...")
 
         key_dir = os.path.join(key_path, "openVPN.key")
         conf_dir = os.path.join(key_path, "openvpn.conf")
@@ -213,7 +213,7 @@ class OpenVPNstatic(VPN):
                 stderr=subprocess.PIPE,
             )
         except Exception as err:
-            messages.print_err("Rosenpass key exchange was not successful!")
+            messages.print_err("OpenVPN key exchange was not successful!")
             print(f"{err=}")
             self.__clean_up()
             return None
@@ -299,5 +299,5 @@ class OpenVPNstatic(VPN):
                 if "main.py" not in line:
                     pid = fields[0]
                     os.kill(int(pid), signal.SIGKILL)
-        except Exception as err:  # no Rosenpass processes running
+        except Exception as err:  # no OpenVPN processes running
             return
