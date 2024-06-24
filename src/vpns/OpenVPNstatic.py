@@ -236,6 +236,7 @@ class OpenVPNstatic(VPN):
             return False
 
         j = 1000  # number of attempts
+        """
         while j > 0:
             try:
                 subprocess.check_output(
@@ -262,6 +263,7 @@ class OpenVPNstatic(VPN):
             except Exception as err:
                 print(f"{err=}")
                 return False
+        """
 
         # if adding an IP address failed
         if j == 0:
