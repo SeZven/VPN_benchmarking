@@ -169,9 +169,14 @@ class OpenVPNstatic(VPN):
         conf_dir = os.path.join(key_path, "openvpn.conf")
 
         try:
+            subprocess.run(
+                    f'echo "dev tun\nifconfig 10.8.0.1 10.8.0.2\nsecret {key_dir}" > {conf_dir}',
+                    shell=True,
+                    stderr=subprocess.PIPE,
+                    stdout=subprocess.PIPE,
+                )
             process = subprocess.Popen(
-                f'echo "dev tun\nifconfig 10.8.0.1 10.8.0.2\nsecret {key_dir}" > {conf_dir}',
-                shell=True,
+                ["sudo", "openvpn", "--config", f"{conf_dir}"],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
             )
@@ -180,6 +185,7 @@ class OpenVPNstatic(VPN):
             print(f"{err=}")
             self.__clean_up()
             return None
+        
 
         return process
 
@@ -194,9 +200,15 @@ class OpenVPNstatic(VPN):
         conf_dir = os.path.join(key_path, "openvpn.conf")
 
         try:
+            subprocess.run(
+                    f'echo "remote {self.hosts.server_address}\ndev tun\nifconfig 10.8.0.2 10.8.0.1\nsecret {key_dir}" > {conf_dir}',
+                    shell=True,
+                    stderr=subprocess.PIPE,
+                    stdout=subprocess.PIPE,
+                )
+            
             process = subprocess.Popen(
-                f'echo "remote {self.hosts.server_address}\ndev tun\nifconfig 10.8.0.2 10.8.0.1\nsecret {key_dir}" > {conf_dir}',
-                shell=True,
+                ["sudo", "openvpn", "--config", f"{conf_dir}"],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
             )
@@ -258,14 +270,6 @@ class OpenVPNstatic(VPN):
             )
             return False
         
-        # start OpenVPN
-        conf_dir = os.path.join(key_path, "openvpn.conf")
-        subprocess.run(
-            ["sudo", "openvpn", "--config", f"{conf_dir}"],
-            check=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
 
         return True
 
