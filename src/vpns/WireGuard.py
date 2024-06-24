@@ -27,7 +27,7 @@ class WireGuard(VPN):
         """
         super().__init__(role)
         self.interface_name = "wg0"
-        self.open_server_address = "[10.0.0.1]"
+        self.open_server_address = "10.0.0.1"
 
     def open(self) -> bool:
         """
