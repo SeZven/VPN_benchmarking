@@ -10,7 +10,7 @@ import src.messages as messages
 from src.vpns.VPN import VPN
 
 key_path = "openVPNstatic-keys"
-opening_port = 9999
+opening_port = 1194
 
 
 class OpenVPNstatic(VPN):
