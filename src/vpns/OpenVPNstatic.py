@@ -170,7 +170,7 @@ class OpenVPNstatic(VPN):
 
         try:
             subprocess.run(
-                    f'echo "dev tun\nifconfig 10.8.0.1 10.8.0.2\nsecret {key_dir}" > {conf_dir}',
+                    f'echo "dev tun0\nifconfig 10.8.0.1 10.8.0.2\nsecret {key_dir}" > {conf_dir}',
                     shell=True,
                     stderr=subprocess.PIPE,
                     stdout=subprocess.PIPE,
@@ -201,7 +201,7 @@ class OpenVPNstatic(VPN):
 
         try:
             subprocess.run(
-                    f'echo "remote {self.hosts.server_address}\ndev tun\nifconfig 10.8.0.2 10.8.0.1\nsecret {key_dir}" > {conf_dir}',
+                    f'echo "remote {self.hosts.server_address}\ndev tun0\nifconfig 10.8.0.2 10.8.0.1\nsecret {key_dir}" > {conf_dir}',
                     shell=True,
                     stderr=subprocess.PIPE,
                     stdout=subprocess.PIPE,
