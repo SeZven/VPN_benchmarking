@@ -37,28 +37,6 @@ class OpenVPNstatic(VPN):
         messages.print_log("Preparing...")
         self.__clean_up()  # close existing Rosenpass processes
 
-        try:
-         # Create OpenVPN interface
-            subprocess.run(
-                ["sudo","ip", "link", "del", "tun0"],
-                check=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-            )
-            subprocess.run(
-                ["sudo","ip", "link", "add", "tun0", "type", "openvpn"],
-                check=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-            )
-        except:  #File does not exist
-            subprocess.run(
-                ["sudo","ip", "link", "add", "tun0", "type", "openvpn"],
-                check=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-            )
-
         messages.print_log("Starting key exchange processes...")
         if self.role == "server":
             self.process = self.__start_rosenpass_key_exchange_on_server()
