@@ -5,7 +5,7 @@ from src.exchanges.HTTP import *
 from src.vpns.NoVPN import *
 from src.vpns.Rosenpass import *
 from src.vpns.WireGuard import *
-from src.vpns.OpenVPNstatic import *
+from src.vpns.OpenVPN import *
 
 
 class HandleInput:
@@ -70,9 +70,9 @@ class HandleInput:
             )
             return False
 
-        if self.vpn_option not in ("novpn", "rosenpass", "wg", "openvpnstatic"):
+        if self.vpn_option not in ("novpn", "rosenpass", "wg", "openvpn"):
             helpers.messages.print_err(
-                "Invalid VPN_OPTION argument. Has to be novpn|rosenpass|wg|openvpnstatic."
+                "Invalid VPN_OPTION argument. Has to be novpn|rosenpass|wg|openvpn."
             )
             return False
 
@@ -111,8 +111,8 @@ class HandleInput:
             vpn = Rosenpass
         elif self.vpn_option == "wg":
             vpn = WireGuard
-        elif self.vpn_option == "openvpnstatic":
-            vpn = OpenVPNstatic    
+        elif self.vpn_option == "openvpn":
+            vpn = OpenVPN    
 
         if self.role == "server":
             self.instance = Server(exchange, vpn)
