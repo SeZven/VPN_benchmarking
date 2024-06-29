@@ -222,7 +222,7 @@ class OpenVPN(VPN):
 
     def __assign_ip_addr_to_interface(self) -> bool:
         """
-        Assigns the IP address 'fe80::1' to the server or 'fe80::2' to the client interface. Interface has to exist.
+        Assigns the IP address '10.8.0.1' to the server or '10.8.0.2' to the client interface. Interface has to exist.
         Attempts multiple times, since the interface might not be ready for the first few tries. Flushes the
         interface after invalid attempt.
         :return: True for success, False otherwise
@@ -236,7 +236,7 @@ class OpenVPN(VPN):
             return False
 
         j = 1000  # number of attempts
-        """
+        
         while j > 0:
             try:
                 subprocess.check_output(
@@ -263,7 +263,7 @@ class OpenVPN(VPN):
             except Exception as err:
                 print(f"{err=}")
                 return False
-        """
+        
 
         # if adding an IP address failed
         if j == 0:
