@@ -200,7 +200,6 @@ class OpenVPN(VPN):
         conf_dir = os.path.join(key_path, "openvpn.conf")
 
         try:
-            """
             subprocess.run(
                     f'echo "remote {self.hosts.server_address}\ndev tun0\nifconfig 10.8.0.2 10.8.0.1\nsecret {key_dir}\nresolv-retry infinite" > {conf_dir}',
                     shell=True,
@@ -213,27 +212,6 @@ class OpenVPN(VPN):
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
             )
-            """
-            process = subprocess.Popen(
-                [
-                    "sudo",
-                    "openvpn",
-                    "--remote",
-                    f"{self.hosts.server_address}",    
-                    "--dev",
-                    "tun",
-                    "--ifconfig"
-                    "10.8.0.2",
-                    "10.8.0.1",
-                    "--secret",
-                    key_dir,
-                ],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-            )
-
-
-
         except Exception as err:
             messages.print_err("OpenVPN key exchange was not successful!")
             print(f"{err=}")
