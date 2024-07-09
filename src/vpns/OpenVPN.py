@@ -267,7 +267,7 @@ class OpenVPN(VPN):
         else:
             return False
 
-        j = 1000  # number of attempts
+        j = -1000  # number of attempts
         
         while j > 0:
             try:
