@@ -200,15 +200,30 @@ class OpenVPN(VPN):
         conf_dir = os.path.join(key_path, "openvpn.conf")
 
         try:
+            """
             subprocess.run(
                     f'echo "remote {self.hosts.server_address}\ndev tun0\nifconfig 10.8.0.2 10.8.0.1\nsecret {key_dir}\nresolv-retry infinite" > {conf_dir}',
                     shell=True,
                     stderr=subprocess.PIPE,
                     stdout=subprocess.PIPE,
                 )
-            
+            """
             process = subprocess.Popen(
-                ["sudo", "openvpn", "--config", f"{conf_dir}"],
+                #["sudo", "openvpn", "--config", f"{conf_dir}"],
+                [
+                    "sudo",
+                    "openvpn",
+                    "--remote",
+                    f"{self.hosts.server_address}",    
+                    "--dev",
+                    "tun",
+                    "--ifconfig"
+                    "10.8.0.2",
+                    "10.8.0.1",
+                    "--secret",
+                    key_dir,
+                ],
+                shell=True,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
             )
