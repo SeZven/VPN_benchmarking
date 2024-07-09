@@ -169,14 +169,29 @@ class OpenVPN(VPN):
         conf_dir = os.path.join(key_path, "openvpn.conf")
 
         try:
+            """
             subprocess.run(
                     f'echo "dev tun0\nifconfig 10.8.0.1 10.8.0.2\nsecret {key_dir}" > {conf_dir}',
                     shell=True,
                     stderr=subprocess.PIPE,
                     stdout=subprocess.PIPE,
                 )
+            """
+            print(key_dir)
             process = subprocess.Popen(
-                ["sudo", "openvpn", "--config", f"{conf_dir}"],
+               # ["sudo", "openvpn", "--config", f"{conf_dir}"],
+                [
+                    "sudo",
+                    "openvpn",   
+                    "--dev",
+                    "tun",
+                    "--ifconfig"
+                    "10.8.0.1",
+                    "10.8.0.2",
+                    "--secret",
+                    key_dir,
+                ],
+                shell=True,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
             )
