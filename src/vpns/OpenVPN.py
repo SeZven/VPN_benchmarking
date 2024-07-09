@@ -208,6 +208,8 @@ class OpenVPN(VPN):
                     stdout=subprocess.PIPE,
                 )
             """
+            print(self.hosts.server_address)
+            print(key_dir)
             process = subprocess.Popen(
                 #["sudo", "openvpn", "--config", f"{conf_dir}"],
                 [
