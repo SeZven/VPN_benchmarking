@@ -169,29 +169,17 @@ class OpenVPN(VPN):
         conf_dir = os.path.join(key_path, "openvpn.conf")
 
         try:
-            """
             subprocess.run(
-                    f'echo "dev tun0\nifconfig 10.8.0.1 10.8.0.2\nsecret {key_dir}" > {conf_dir}',
+                    f'echo "dev tun\nifconfig 10.8.0.1 10.8.0.2\nsecret {key_dir}\ncipher AES-256-CBC" > {conf_dir}',
                     shell=True,
                     stderr=subprocess.PIPE,
                     stdout=subprocess.PIPE,
                 )
-            """
+            
             print(key_dir)
             process = subprocess.Popen(
-               # ["sudo", "openvpn", "--config", f"{conf_dir}"],
-                [
-                    "sudo",
-                    "openvpn",   
-                    "--dev",
-                    "tun",
-                    "--ifconfig"
-                    "10.8.0.1",
-                    "10.8.0.2",
-                    "--secret",
-                    key_dir,
-                ],
-                shell=True,
+               ["sudo", "openvpn", "--config", f"{conf_dir}"],
+                #shell=True,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
             )
@@ -215,18 +203,15 @@ class OpenVPN(VPN):
         conf_dir = os.path.join(key_path, "openvpn.conf")
 
         try:
-            """
             subprocess.run(
-                    f'echo "remote {self.hosts.server_address}\ndev tun0\nifconfig 10.8.0.2 10.8.0.1\nsecret {key_dir}\nresolv-retry infinite" > {conf_dir}',
+                    f'echo "remote {self.hosts.server_address}\ndev tun\nifconfig 10.8.0.2 10.8.0.1\nsecret {key_dir}\ncipher AES-256-CBC" > {conf_dir}',
                     shell=True,
                     stderr=subprocess.PIPE,
                     stdout=subprocess.PIPE,
                 )
-            """
             print(self.hosts.server_address)
             print(key_dir)
-            process = subprocess.Popen(
-                #["sudo", "openvpn", "--config", f"{conf_dir}"],
+            """
                 [
                     "sudo",
                     "openvpn",
@@ -240,7 +225,10 @@ class OpenVPN(VPN):
                     "--secret",
                     key_dir,
                 ],
-                shell=True,
+            """
+            process = subprocess.Popen(
+                ["sudo", "openvpn", "--config", f"{conf_dir}"],
+                #shell=True,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
             )
@@ -267,7 +255,7 @@ class OpenVPN(VPN):
         else:
             return False
 
-        j = -1000  # number of attempts
+        j = 1000  # number of attempts
         
         while j > 0:
             try:
