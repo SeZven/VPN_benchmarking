@@ -217,7 +217,6 @@ class OpenVPN(VPN):
         """
         messages.print_log("Starting OpenVPN key exchange...")
 
-        key_dir = os.path.join(key_path, "openvpn.key")
         conf_dir = os.path.join(key_path, "openvpn.conf")
 
         config=f"""port {opening_port}
@@ -231,16 +230,10 @@ topology subnet
 server 10.8.0.0 255.255.255.0
 ifconfig-pool-persist ipp.txt"""
 
+        with open(conf_dir, 'w') as f:
+                f.write(config)
 
         try:
-            subprocess.run(
-                    f'echo {config} > {conf_dir}',
-                    shell=True,
-                    stderr=subprocess.PIPE,
-                    stdout=subprocess.PIPE,
-                )
-            
-            print(key_dir)
             process = subprocess.Popen(
                ["sudo", "openvpn", "--config", f"{conf_dir}"],
                 #shell=True,
@@ -263,7 +256,6 @@ ifconfig-pool-persist ipp.txt"""
         """
         messages.print_log("Starting OpenVPN key exchange...")
 
-        key_dir = os.path.join(key_path, "openvpn.key")
         conf_dir = os.path.join(key_path, "openvpn.conf")
 
         config = f"""client
@@ -278,30 +270,10 @@ cert openvpn-keys/client.crt
 key openvpn-keys/client.key
 remote-cert-tls server"""
 
+        with open(conf_dir, 'w') as f:
+                f.write(config)
+
         try:
-            subprocess.run(
-                    f'echo {config} > {conf_dir}',
-                    shell=True,
-                    stderr=subprocess.PIPE,
-                    stdout=subprocess.PIPE,
-                )
-            print(self.hosts.server_address)
-            print(key_dir)
-            """
-                [
-                    "sudo",
-                    "openvpn",
-                    "--remote",
-                    f"{self.hosts.server_address}",    
-                    "--dev",
-                    "tun",
-                    "--ifconfig"
-                    "10.8.0.2",
-                    "10.8.0.1",
-                    "--secret",
-                    key_dir,
-                ],
-            """
             process = subprocess.Popen(
                 ["sudo", "openvpn", "--config", f"{conf_dir}"],
                 #shell=True,
