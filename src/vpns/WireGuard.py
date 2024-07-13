@@ -119,6 +119,7 @@ class WireGuard(VPN):
             )
             if click.confirm("Overwrite existing key folders and generate new keys?"):
                 shutil.rmtree(key_path, ignore_errors=False, onerror=None)
+                os.mkdir(key_path)
             else:
                 return True
 

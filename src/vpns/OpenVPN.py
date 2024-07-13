@@ -72,7 +72,7 @@ class OpenVPN(VPN):
         :return: True for success, False otherwise
         """
         messages.print_log(
-            f"Generating OpenVPN static key for {self.role}..."
+            f"Generating OpenVPN keys for {self.role}..."
         )
 
         # Create directory if not existent
@@ -86,28 +86,37 @@ class OpenVPN(VPN):
                 print(f"{err=}")
                 return False
 
-        k_path = f"{key_path}/openvpn.key"
+        pki_path = f"pki"
 
         # If key directories exist, ask for overwriting, otherwise keep old keys.
-        if os.path.exists(k_path):
+        if os.path.exists(pki_path):
             messages.print_warn(
-                "The folders for the keys already exist (and possibly the keys)."
+                "The folders for the pki already exist (and possibly the keys)."
             )
-            if click.confirm("Overwrite existing key folders and generate new keys?"):
+            if click.confirm("Overwrite existing pki folders and generate new keys?"):
                 shutil.rmtree(key_path, ignore_errors=False, onerror=None)
+                os.mkdir(key_path)
+                shutil.rmtree(pki_path, ignore_errors=False, onerror=None)
             else:
                 return True
 
         try:
-            subprocess.check_output(
-                [
-                    "openvpn",
-                    "--genkey",
-                    "secret",
-                    k_path,
-                ],
-                stderr=subprocess.PIPE,
-            )
+            #subprocess.check_output( ["rm", "-r", "pki",],stderr=subprocess.PIPE,)
+            subprocess.check_output( ["easyrsa", "init-pki", ],stderr=subprocess.PIPE,)
+            subprocess.check_output( [ "easyrsa", "build-ca", "nopass", ],input=b"ca\n",stderr=subprocess.PIPE,)
+
+            subprocess.check_output( [ "easyrsa", "gen-req", "server","nopass", ],input=b"server\n",stderr=subprocess.PIPE,)
+            subprocess.check_output( [ "easyrsa", "gen-req", "client","nopass", ],input=b"client\n",stderr=subprocess.PIPE,)
+
+            subprocess.check_output( [ "easyrsa", "sign-req", "server","server", ],input=b"yes\n",stderr=subprocess.PIPE,)
+            subprocess.check_output( [ "easyrsa", "sign-req", "client","client", ],input=b"yes\n",stderr=subprocess.PIPE,)
+
+            subprocess.check_output( [ "easyrsa", "gen-dh", ],stderr=subprocess.PIPE,)
+
+            subprocess.check_output( [ "cp", "pki/ca.crt", key_path, ],stderr=subprocess.PIPE,)
+            subprocess.check_output( [ "cp", "pki/private/server.key", key_path, ],stderr=subprocess.PIPE,)
+            subprocess.check_output( [ "cp", "pki/issued/server.crt", key_path, ],stderr=subprocess.PIPE,)
+            subprocess.check_output( [ "cp", "pki/dh.pem", key_path, ],stderr=subprocess.PIPE,)
 
             messages.print_log(f"Generated keys for the {self.role}.")
             return True
