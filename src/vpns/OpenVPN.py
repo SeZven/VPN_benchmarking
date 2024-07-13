@@ -160,13 +160,12 @@ class OpenVPN(VPN):
         :return: True for success, False otherwise
         """
         if self.role == "server":
-            messages.print_log("Sending public keys to the client...")
+            messages.print_log("Sending keys to the client...")
             remote_user = self.hosts.client_user
             remote_address = self.hosts.client_address
         elif self.role == "client":
-            messages.print_log("Sending public keys to the server... ")
-            remote_user = self.hosts.server_user
-            remote_address = self.hosts.server_address
+            messages.print_log("Keys can only be sent from the server to the client.")
+            return True
         else:
             return False
 
