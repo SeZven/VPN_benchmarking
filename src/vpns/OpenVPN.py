@@ -220,9 +220,21 @@ class OpenVPN(VPN):
         key_dir = os.path.join(key_path, "openvpn.key")
         conf_dir = os.path.join(key_path, "openvpn.conf")
 
+        config=f"""port {opening_port}
+proto udp
+dev tun
+ca openvpn-keys/ca.crt
+cert openvpn-keys/server.crt
+key openvpn-keys/server.key
+dh openvpn-keys/dh.pem
+topology subnet
+server 10.8.0.0 255.255.255.0
+ifconfig-pool-persist ipp.txt"""
+
+
         try:
             subprocess.run(
-                    f'echo "dev tun\nifconfig 10.8.0.1 10.8.0.2\nsecret {key_dir}\ncipher AES-256-CBC" > {conf_dir}',
+                    f'echo {config} > {conf_dir}',
                     shell=True,
                     stderr=subprocess.PIPE,
                     stdout=subprocess.PIPE,
@@ -254,9 +266,21 @@ class OpenVPN(VPN):
         key_dir = os.path.join(key_path, "openvpn.key")
         conf_dir = os.path.join(key_path, "openvpn.conf")
 
+        config = f"""client
+dev tun
+proto udp
+remote {self.hosts.server_address} {opening_port}
+resolv-retry infinite
+nobind
+persist-tun
+ca openvpn-keys/ca.crt
+cert openvpn-keys/client.crt
+key openvpn-keys/client.key
+remote-cert-tls server"""
+
         try:
             subprocess.run(
-                    f'echo "remote {self.hosts.server_address}\ndev tun\nifconfig 10.8.0.2 10.8.0.1\nsecret {key_dir}\ncipher AES-256-CBC" > {conf_dir}',
+                    f'echo {config} > {conf_dir}',
                     shell=True,
                     stderr=subprocess.PIPE,
                     stdout=subprocess.PIPE,
