@@ -9,11 +9,11 @@ import src.helpers as helpers
 import src.messages as messages
 from src.vpns.VPN import VPN
 
-key_path = "openvpn-keys"
+key_path = "openvpnstatic-keys"
 opening_port = 1194
 
 
-class OpenVPN(VPN):
+class OpenVPNstatic(VPN):
     """
     Implements OpenVPN.
     """
@@ -175,11 +175,8 @@ class OpenVPN(VPN):
                     stderr=subprocess.PIPE,
                     stdout=subprocess.PIPE,
                 )
-            
-            print(key_dir)
             process = subprocess.Popen(
                ["sudo", "openvpn", "--config", f"{conf_dir}"],
-                #shell=True,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
             )
@@ -209,23 +206,6 @@ class OpenVPN(VPN):
                     stderr=subprocess.PIPE,
                     stdout=subprocess.PIPE,
                 )
-            print(self.hosts.server_address)
-            print(key_dir)
-            """
-                [
-                    "sudo",
-                    "openvpn",
-                    "--remote",
-                    f"{self.hosts.server_address}",    
-                    "--dev",
-                    "tun",
-                    "--ifconfig"
-                    "10.8.0.2",
-                    "10.8.0.1",
-                    "--secret",
-                    key_dir,
-                ],
-            """
             process = subprocess.Popen(
                 ["sudo", "openvpn", "--config", f"{conf_dir}"],
                 #shell=True,
@@ -294,7 +274,7 @@ class OpenVPN(VPN):
         
         try:
             # Add openvpn to route table
-            subprocess.run( #sudo ip link set wg0 up 
+            subprocess.run(
                 ["sudo", "ip", "route", "add", "10.8.0.0/24", "dev", "tun0"],
                 check=True,
                 stdout=subprocess.PIPE,
