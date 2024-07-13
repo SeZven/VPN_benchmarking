@@ -75,6 +75,31 @@ class OpenVPN(VPN):
             f"Generating OpenVPN keys for {self.role}..."
         )
 
+        if self.role == "client":
+            if not os.path.exists(key_path):
+                try:
+                    os.mkdir(key_path)
+                except Exception as err:
+                    messages.print_err(
+                        "Something went wrong when creating the key directory."
+                    )
+                    print(f"{err=}")
+                    return False
+            else:
+                messages.print_warn(
+                    "The folders for the keys already exist (and possibly the keys)."
+                )
+                if click.confirm("Overwrite existing keys folder?"):
+                    shutil.rmtree(key_path, ignore_errors=False, onerror=None)
+                    os.mkdir(key_path)
+                    shutil.rmtree(pki_path, ignore_errors=False, onerror=None)
+                else:
+                    return True
+            messages.print_log("Key directory created successfully.")
+            messages.print_log("Keys have to be generated on the server.")
+            return True
+
+
         # Create directory if not existent
         if not os.path.exists(key_path):
             try:
@@ -86,7 +111,7 @@ class OpenVPN(VPN):
                 print(f"{err=}")
                 return False
 
-        pki_path = f"pki"
+        pki_path = "pki"
 
         # If key directories exist, ask for overwriting, otherwise keep old keys.
         if os.path.exists(pki_path):
@@ -105,11 +130,11 @@ class OpenVPN(VPN):
             subprocess.check_output( ["easyrsa", "init-pki", ],stderr=subprocess.PIPE,)
             subprocess.check_output( [ "easyrsa", "build-ca", "nopass", ],input=b"ca\n",stderr=subprocess.PIPE,)
 
-            subprocess.check_output( [ "easyrsa", "gen-req", "server","nopass", ],input=b"server\n",stderr=subprocess.PIPE,)
-            subprocess.check_output( [ "easyrsa", "gen-req", "client","nopass", ],input=b"client\n",stderr=subprocess.PIPE,)
+            subprocess.check_output( [ "easyrsa", "gen-req", "server", "nopass", ],input=b"server\n",stderr=subprocess.PIPE,)
+            subprocess.check_output( [ "easyrsa", "gen-req", "client", "nopass", ],input=b"client\n",stderr=subprocess.PIPE,)
 
-            subprocess.check_output( [ "easyrsa", "sign-req", "server","server", ],input=b"yes\n",stderr=subprocess.PIPE,)
-            subprocess.check_output( [ "easyrsa", "sign-req", "client","client", ],input=b"yes\n",stderr=subprocess.PIPE,)
+            subprocess.check_output( [ "easyrsa", "sign-req", "server", "server", ],input=b"yes\n",stderr=subprocess.PIPE,)
+            subprocess.check_output( [ "easyrsa", "sign-req", "client", "client", ],input=b"yes\n",stderr=subprocess.PIPE,)
 
             subprocess.check_output( [ "easyrsa", "gen-dh", ],stderr=subprocess.PIPE,)
 
@@ -146,7 +171,27 @@ class OpenVPN(VPN):
             return False
 
         try:
-            file_name = "openvpn.key"
+            file_name = "pki/ca.crt"
+            success = helpers.send_file_to_host(
+                os.path.join(key_path, file_name),
+                remote_user,
+                remote_address,
+                os.path.join(remote_path, key_path),
+            )
+            if not success:
+                return False
+            
+            file_name = "pki/private/client.key"
+            success = helpers.send_file_to_host(
+                os.path.join(key_path, file_name),
+                remote_user,
+                remote_address,
+                os.path.join(remote_path, key_path),
+            )
+            if not success:
+                return False
+            
+            file_name = "pki/issued/client.crt"
             success = helpers.send_file_to_host(
                 os.path.join(key_path, file_name),
                 remote_user,
