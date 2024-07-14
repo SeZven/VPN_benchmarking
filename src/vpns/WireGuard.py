@@ -242,9 +242,9 @@ class WireGuard(VPN):
                 stderr=subprocess.PIPE,
             )
 
-            stdout, stderr = process.communicate()
-            print(stdout.decode())
-            print(stderr.decode())
+            #stdout, stderr = process.communicate()
+            #print(stdout.decode())
+            #print(stderr.decode())
     
         except Exception as err:
             messages.print_err("WireGuard key exchange was not successful!")
