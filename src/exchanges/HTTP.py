@@ -111,16 +111,8 @@ class HTTP(Exchange):
         """
 
         def do_GET(self):
-            j = 1000  # number of attempts
-        
-            while j > 0:
-                try:
-                    self.send_response(200) #TODO: Client does not always recieve response
-                    self.end_headers()
-                    break
-                except:
-                    j -= 1
-
+            self.send_response(200) #TODO: Client does not always recieve response
+            self.end_headers()
 
 
 class HTTPServerV6(HTTPServer):
