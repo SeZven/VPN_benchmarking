@@ -37,8 +37,7 @@ class WireGuard(VPN):
         messages.print_log("Preparing...")
         self.__clean_up()  # close existing WireGuard processes
 
-        try:
-         # Create WireGuard interface TODO: try delete first and then create wg0
+        try: # Delete old WiregGuard interface and create a new Wireguard interface
             subprocess.run(
                 ["sudo","ip", "link", "del", "wg0"],
                 check=True,
@@ -51,7 +50,7 @@ class WireGuard(VPN):
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
             )
-        except:  #File does not exist
+        except: # Old interfaces does not exist: Create WireGuard interface
             subprocess.run(
                 ["sudo","ip", "link", "add", "wg0", "type", "wireguard"],
                 check=True,
@@ -123,13 +122,9 @@ class WireGuard(VPN):
             else:
                 return True
 
+        # Generate keys for WireGuard
         try:
             subprocess.check_output(
-                #wg genkey | tee privatekey | wg pubkey > publickey 
-                #wg genkey | tee wg-keys/server.wg-secret | wg pubkey > wg-keys/server.wg-public 
-                #TODO:works when done manually, but not like this:
-                #only generates the empty folder wg-keys and raises unable to generate keys err.#
-                #use of shell features like pipes "|" and redirections ">".
                 """
                     "wg",
                     "genkey",
@@ -145,11 +140,9 @@ class WireGuard(VPN):
                 stderr=subprocess.PIPE,
                 """
                 f"wg genkey | tee {sk_path} | wg pubkey > {pk_path}",
-                shell=True,
-                stderr=subprocess.PIPE,
-                
+                shell=True, # use of shell for pipes "|" and redirections ">".
+                stderr=subprocess.PIPE,    
             )
-
             messages.print_log(f"Generated keys for the {self.role}.")
             return True
         except Exception as err:
@@ -161,17 +154,17 @@ class WireGuard(VPN):
 
     def share_pubkeys(self, remote_path) -> bool:
         """
-        Sends the before generated public Wireguard and WireGuard keys to the other host. Will use the wg-keys/...
+        Sends the before generated public Wireguard key to the other host. Will use the wg-keys/...
         directories on the remote host's remote_path. Key directories on the other host must exist.
         :param remote_path: path in which the wg-keys directory exists on the remote host
         :return: True for success, False otherwise
         """
         if self.role == "server":
-            messages.print_log("Sending public keys to the client...")
+            messages.print_log("Sending public key to the client...")
             remote_user = self.hosts.client_user
             remote_address = self.hosts.client_address
         elif self.role == "client":
-            messages.print_log("Sending public keys to the server... ")
+            messages.print_log("Sending public key to the server... ")
             remote_user = self.hosts.server_user
             remote_address = self.hosts.server_address
         else:
@@ -205,23 +198,13 @@ class WireGuard(VPN):
         :return: True for success, False otherwise
         """
         messages.print_log("Starting WireGuard key exchange...")
-        
-
 
         server_sk_dir = os.path.join(key_path, "server.wg-secret")
         client_pk_dir = os.path.join(key_path, "client.wg-public")
         client_pk = open(client_pk_dir).readline().strip() # Contains the wg-public-key, strip() to remove whitespaces
 
-
-        messages.print_log(f"{opening_port}")
-        messages.print_log(server_sk_dir)
-        messages.print_log(client_pk)
-        messages.print_log(f"{self.hosts.client_address}:{opening_port}")
-
-        try: # Set WireGuard configuration
+        try: # Set WireGuard configuration and start key exchange
             process = subprocess.Popen(
-                #sudo rp exchange server.rosenpass-secret dev rosenpass0 listen 192.168.0.1:9999 peer client.rosenpass-public allowed-ips fe80::/64
-                #wg set wg0 listen-port 51820 private-key /path/to/private-key peer ABCDEF... allowed-ips 192.168.88.0/24 endpoint 209.202.254.14:8172
                 [
                     "sudo",
                     "wg",
@@ -230,9 +213,9 @@ class WireGuard(VPN):
                     "listen-port",
                     f"{opening_port}",
                     "private-key",
-                    f"{server_sk_dir}",  # server secret key TODO:fopen: No such file or directory
+                    f"{server_sk_dir}",
                     "peer",
-                    f"{client_pk}",  # client public key TODO: direct key not directory TODO: Key is not the correct length or format: `6srzHEvffTpujcZ+aJZU/f/qockYsF7SKr9H29/uZGE=                      '
+                    f"{client_pk}",                      
                     "allowed-ips",
                     "10.0.0.2/32",
                     "endpoint",
@@ -241,10 +224,6 @@ class WireGuard(VPN):
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
             )
-
-            #stdout, stderr = process.communicate()
-            #print(stdout.decode())
-            #print(stderr.decode())
     
         except Exception as err:
             messages.print_err("WireGuard key exchange was not successful!")
@@ -265,7 +244,7 @@ class WireGuard(VPN):
         server_pk_dir = os.path.join(key_path, "server.wg-public")
         server_pk = open(server_pk_dir).readline().strip() # Contains the wg-public-key
 
-        try:
+        try: # Set WireGuard configuration and start key exchange
             process = subprocess.Popen(
                 [
                     "sudo",
@@ -346,8 +325,8 @@ class WireGuard(VPN):
             return False
         
 
-         # Bring up the interface
-        subprocess.run( #sudo ip link set wg0 up 
+        # Bring up the interface
+        subprocess.run(
             ["sudo", "ip", "link", "set", "wg0", "up"],
             check=True,
             stdout=subprocess.PIPE,
@@ -355,14 +334,14 @@ class WireGuard(VPN):
         )
         
         try:
-            # Add wg route ro route table
-            subprocess.run( #sudo ip link set wg0 up 
+            # Add WireGuard to route table
+            subprocess.run(
                 ["sudo", "ip", "route", "add", "10.0.0.0/24", "dev", "wg0"],
                 check=True,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
             )
-        except:
+        except: # Wirguard was already added to the route table
             pass
             
 

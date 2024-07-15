@@ -31,7 +31,7 @@ class OpenVPN(VPN):
 
     def open(self) -> bool:
         """
-        Opens the OpenVPN VPN. Will stay open after completion. Can be closed with the close method.
+        Opens OpenVPN. Will stay open after completion. Can be closed with the close method.
         :return: True for success, False otherwise
         """
         messages.print_log("Preparing...")
@@ -67,7 +67,7 @@ class OpenVPN(VPN):
 
     def generate_keys(self) -> bool:
         """
-        Generates the necessary keys for OpenVPN. Creates or uses existing openvpn-keys directory,
+        Generates the necessary keys, certificates and Diffie Hellman parameters for OpenVPN. Creates pki Creates or uses existing openvpn-keys directory,
         creates [role].openvpn-key. If key directories already exist, asks for overwriting, otherwise keeps existing keys.
         :return: True for success, False otherwise
         """
@@ -95,7 +95,7 @@ class OpenVPN(VPN):
                 else:
                     return True
             messages.print_log("Key directory created successfully.")
-            messages.print_log("Keys have to be generated on the server.")
+            messages.print_log("Keys have to be generated on the server.") # For simplicity the server creates all keys and certificates
             return False
 
 
@@ -125,18 +125,22 @@ class OpenVPN(VPN):
                 return True
 
         try:
-            #subprocess.check_output( ["rm", "-r", "pki",],stderr=subprocess.PIPE,)
+            # Initialize the Public Key Infrastructure and build the Certification Authority
             subprocess.check_output( ["easyrsa", "init-pki", ],stderr=subprocess.PIPE,)
             subprocess.check_output( [ "easyrsa", "build-ca", "nopass", ],input=b"ca\n",stderr=subprocess.PIPE,)
 
+            # Generate request for server and client
             subprocess.check_output( [ "easyrsa", "gen-req", "server", "nopass", ],input=b"server\n",stderr=subprocess.PIPE,)
             subprocess.check_output( [ "easyrsa", "gen-req", "client", "nopass", ],input=b"client\n",stderr=subprocess.PIPE,)
 
+            # Sign request for server and client
             subprocess.check_output( [ "easyrsa", "sign-req", "server", "server", ],input=b"yes\n",stderr=subprocess.PIPE,)
             subprocess.check_output( [ "easyrsa", "sign-req", "client", "client", ],input=b"yes\n",stderr=subprocess.PIPE,)
 
+            # Generate Diffie Hellman parameters
             subprocess.check_output( [ "easyrsa", "gen-dh", ],stderr=subprocess.PIPE,)
 
+            # Copy the necessary key (server), certificates (ca and server), and  Diffie Hellman parameters to the key_path directory
             subprocess.check_output( [ "cp", "pki/ca.crt", key_path, ],stderr=subprocess.PIPE,)
             subprocess.check_output( [ "cp", "pki/private/server.key", key_path, ],stderr=subprocess.PIPE,)
             subprocess.check_output( [ "cp", "pki/issued/server.crt", key_path, ],stderr=subprocess.PIPE,)
@@ -163,12 +167,12 @@ class OpenVPN(VPN):
             remote_user = self.hosts.client_user
             remote_address = self.hosts.client_address
         elif self.role == "client":
-            messages.print_log("Keys can only be sent from the server to the client.")
+            messages.print_log("Keys can only be sent from the server to the client.") # Client can not share keys since the server creates them all
             return False
         else:
             return False
 
-        try:
+        try: # Sends the before generated Certification Authority, client key, and client certificate files to the clients key_path directory
             file_name = "pki/ca.crt"
             success = helpers.send_file_to_host(
                 os.path.join(file_name),
@@ -234,9 +238,8 @@ ifconfig-pool-persist ipp.txt"""
                 f.write(config)
 
         try:
-            process = subprocess.Popen(
+            process = subprocess.Popen( # Start key exchange
                ["sudo", "openvpn", "--config", f"{conf_dir}"],
-                #shell=True,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
             )
@@ -274,9 +277,8 @@ remote-cert-tls server"""
                 f.write(config)
 
         try:
-            process = subprocess.Popen(
+            process = subprocess.Popen( # Start key exchange
                 ["sudo", "openvpn", "--config", f"{conf_dir}"],
-                #shell=True,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
             )
@@ -341,14 +343,14 @@ remote-cert-tls server"""
             return False
         
         try:
-            # Add openvpn to route table
-            subprocess.run( #sudo ip link set wg0 up 
+            # Add OpenVPN to route table
+            subprocess.run(
                 ["sudo", "ip", "route", "add", "10.8.0.0/24", "dev", "tun0"],
                 check=True,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
             )
-        except:
+        except: # OpenVPN was already added to route table
             pass
 
 
