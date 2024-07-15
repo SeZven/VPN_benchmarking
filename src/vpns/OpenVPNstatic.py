@@ -15,7 +15,7 @@ opening_port = 1194
 
 class OpenVPNstatic(VPN):
     """
-    Implements OpenVPN.
+    Implements the OpenVPN proof-of-concept version.
     """
     process = None
 
@@ -67,8 +67,8 @@ class OpenVPNstatic(VPN):
 
     def generate_keys(self) -> bool:
         """
-        Generates the necessary keys for OpenVPN. Creates or uses existing openvpn-keys directory,
-        creates [role].openvpn-key. If key directories already exist, asks for overwriting, otherwise keeps existing keys.
+        Generates the necessary static key for OpenVPN. Creates or uses existing openvpnstatic-keys directory,
+        creates openvpn-key. If key directories already exist, asks for overwriting, otherwise keeps existing keys.
         :return: True for success, False otherwise
         """
         messages.print_log(
@@ -120,8 +120,8 @@ class OpenVPNstatic(VPN):
 
     def share_pubkeys(self, remote_path) -> bool:
         """
-        Sends the before generated public OpenVPN keys to the other host. Will use the rp-keys/...
-        directories on the remote host's remote_path. Key directories on the other host must exist.
+        Sends the before generated static OpenVPN key to the other host. Will use the openvpnstatic 
+        directorie on the remote host's remote_path. Key directorie on the other host must exist.
         :param remote_path: path in which the rp-keys directory exists on the remote host
         :return: True for success, False otherwise
         """
@@ -169,7 +169,7 @@ class OpenVPNstatic(VPN):
         conf_dir = os.path.join(key_path, "openvpn.conf")
 
         try:
-            subprocess.run(
+            subprocess.run( # Create openvpn.conf
                     f'echo "dev tun\nifconfig 10.8.0.1 10.8.0.2\nsecret {key_dir}\ncipher AES-256-CBC" > {conf_dir}',
                     shell=True,
                     stderr=subprocess.PIPE,
@@ -200,7 +200,7 @@ class OpenVPNstatic(VPN):
         conf_dir = os.path.join(key_path, "openvpn.conf")
 
         try:
-            subprocess.run(
+            subprocess.run( # Create openvpn.conf
                     f'echo "remote {self.hosts.server_address}\ndev tun\nifconfig 10.8.0.2 10.8.0.1\nsecret {key_dir}\ncipher AES-256-CBC" > {conf_dir}',
                     shell=True,
                     stderr=subprocess.PIPE,
@@ -208,7 +208,6 @@ class OpenVPNstatic(VPN):
                 )
             process = subprocess.Popen(
                 ["sudo", "openvpn", "--config", f"{conf_dir}"],
-                #shell=True,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
             )
@@ -280,7 +279,7 @@ class OpenVPNstatic(VPN):
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
             )
-        except:
+        except: # OpenVPN was already added to the route table
             pass
 
 
