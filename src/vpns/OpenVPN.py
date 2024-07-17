@@ -2,6 +2,7 @@ import os
 import shutil
 import signal
 import subprocess
+import time
 
 import click
 
@@ -283,6 +284,7 @@ remote-cert-tls server"""
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
             )
+            time.sleep(4)
         except Exception as err:
             messages.print_err("OpenVPN key exchange was not successful!")
             print(f"{err=}")
