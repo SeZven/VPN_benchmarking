@@ -7,6 +7,8 @@ import pycurl
 import src.messages as messages
 from src.exchanges.Exchange import Exchange
 
+import time
+
 
 class HTTP(Exchange):
     """
@@ -48,6 +50,7 @@ class HTTP(Exchange):
 
             print("Awaiting request... ", end="", flush=True)
             server.handle_request()
+            time.sleep(1)
             messages.print_log("Closing server.")
             server.server_close()
             return 0
@@ -87,6 +90,7 @@ class HTTP(Exchange):
 
         try:
             c.perform()
+            time.sleep(1)
             response_code = c.getinfo(pycurl.RESPONSE_CODE)
             c.close()
         except pycurl.error as e:
