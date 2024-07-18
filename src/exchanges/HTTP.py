@@ -98,25 +98,6 @@ class HTTP(Exchange):
         messages.print_log(f"response code: {response_code}")
 
         if response_code == 200:
-            #messages.print_log("Request successful!")
-            #return 0
-        
-            # Send acknowledgment
-            ack_url = f"http://{address}:{port}/ack"
-            c = pycurl.Curl()
-            c.setopt(pycurl.URL, ack_url)
-            c.setopt(pycurl.HTTPGET, True)
-            if interface:
-                c.setopt(pycurl.INTERFACE, interface)
-            c.setopt(pycurl.TIMEOUT, 2)
-            c.setopt(pycurl.WRITEDATA, BytesIO())
-            try:
-                c.perform()
-                c.close()
-                messages.print_log("Acknowledgment sent!")
-            except pycurl.error as e:
-                return 1
-
             messages.print_log("Request successful!")
             return 0
 
@@ -128,15 +109,8 @@ class HTTP(Exchange):
         """
 
         def do_GET(self):
-            #self.send_response(200) #TODO: Client does not always recieve response
-            #self.end_headers()
-            if self.path == "/ack":
-                self.send_response(200)
-                self.end_headers()
-                self.server.received_ack = True
-            else:
-                self.send_response(200)  # TODO: Client does not always receive response
-                self.end_headers()
+            self.send_response(200) #TODO: Client does not always recieve response
+            self.end_headers()
 
 
 class HTTPServerV6(HTTPServer):
@@ -144,11 +118,3 @@ class HTTPServerV6(HTTPServer):
     Normal HTTP Server using IPv6.
     """
     address_family = socket.AF_INET6
-
-    def __init__(self, server_address, RequestHandlerClass):
-        super().__init__(server_address, RequestHandlerClass)
-        self.received_ack = False
-
-    def handle_request(self):
-        while not self.received_ack:
-            self._handle_request_noblock()
