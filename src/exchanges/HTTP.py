@@ -93,6 +93,8 @@ class HTTP(Exchange):
         except pycurl.error as e:
             if "28" in str(e):  # 28 is the error code for timeouts
                 return 2
+            #print(e)
+            #print(url)
             return 1
         
         messages.print_log(f"response code: {response_code}")

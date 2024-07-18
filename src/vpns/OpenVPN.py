@@ -231,7 +231,6 @@ cert openvpn-keys/server.crt
 key openvpn-keys/server.key
 dh openvpn-keys/dh.pem
 topology subnet
-push "route 10.8.0.0 255.255.255.0"
 server 10.8.0.0 255.255.255.0
 ifconfig-pool-persist ipp.txt"""
 
@@ -306,53 +305,53 @@ remote-cert-tls server"""
         else:
             return False
 
-        # j = 1000  # number of attempts
+        j = 1000  # number of attempts
         
-        # while j > 0:
-        #     try:
-        #         subprocess.check_output(
-        #             [
-        #                 "sudo",
-        #                 "ip",
-        #                 "addr",
-        #                 "add",
-        #                 f"10.8.0.{number}/32",
-        #                 "dev",
-        #                 "tun0",
-        #             ],
-        #             stderr=subprocess.PIPE,
-        #         )
-        #         break
-        #     except subprocess.CalledProcessError:
-        #         # flushes the interface for the case in which 'RTNETLINK answers: File exists error' occurs
-        #         subprocess.run(
-        #             ["sudo", "ip", "addr", "flush", "dev", "tun0"],
-        #             stderr=subprocess.PIPE,
-        #             stdout=subprocess.PIPE,
-        #         )
-        #         j -= 1
-        #     except Exception as err:
-        #         print(f"{err=}")
-        #         return False
+        while j > 0:
+            try:
+                subprocess.check_output(
+                    [
+                        "sudo",
+                        "ip",
+                        "addr",
+                        "add",
+                        f"10.8.0.{number}/32",
+                        "dev",
+                        "tun0",
+                    ],
+                    stderr=subprocess.PIPE,
+                )
+                break
+            except subprocess.CalledProcessError:
+                # flushes the interface for the case in which 'RTNETLINK answers: File exists error' occurs
+                subprocess.run(
+                    ["sudo", "ip", "addr", "flush", "dev", "tun0"],
+                    stderr=subprocess.PIPE,
+                    stdout=subprocess.PIPE,
+                )
+                j -= 1
+            except Exception as err:
+                print(f"{err=}")
+                return False
         
 
         # if adding an IP address failed
-        # if j == 0:
-        #     messages.print_err(
-        #         f"Too many attempts assigning IP address! Please try again."
-        #     )
-        #     return False
+        if j == 0:
+            messages.print_err(
+                f"Too many attempts assigning IP address! Please try again."
+            )
+            return False
         
-        # try:
-        #     # Add OpenVPN to route table
-        #     subprocess.run(
-        #         ["sudo", "ip", "route", "add", "10.8.0.0/24", "dev", "tun0"],
-        #         check=True,
-        #         stdout=subprocess.PIPE,
-        #         stderr=subprocess.PIPE,
-        #     )
-        # except: # OpenVPN was already added to route table
-        #     pass
+        try:
+            # Add OpenVPN to route table
+            subprocess.run(
+                ["sudo", "ip", "route", "add", "10.8.0.0/24", "dev", "tun0"],
+                check=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
+        except: # OpenVPN was already added to route table
+            pass
 
 
         return True
