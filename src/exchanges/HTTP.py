@@ -29,7 +29,7 @@ class HTTP(Exchange):
         reopening the interface
         """
         if self.role == "server":
-            return self.__run_server(self.open_server_address, self.open_server_port) # self.interface
+            return self.__run_server(self.open_server_address, self.open_server_port)
         elif self.role == "client":
             return self.__run_client(self.open_server_address, self.open_server_port, self.interface)
 
