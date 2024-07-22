@@ -182,6 +182,21 @@ class SingleFileGraphHandler:
                         #result.append(self.value_lists[name_string][i])
                 #self.value_lists[name_string] = result
 
+            if name_string == "bytes_recv" or name_string == "bytes_sent":
+                #self.value_lists[name_string] = [self.value_lists[name_string][i-1] if self.value_lists[name_string][i] > self.value_lists[name_string][i-1] + 10 else self.value_lists[name_string][i] for i in range(len(self.value_lists[name_string]))]
+                result = []
+                result.append(self.value_lists[name_string][0])
+                for i in range(1,len(self.value_lists[name_string])):
+                    if self.value_lists[name_string][i] > result[-1] + 1000000:
+                        if self.value_lists[name_string][i] - self.value_lists[name_string][i-1] < 1000000:
+                            result.append(result[-1] + self.value_lists[name_string][i] - self.value_lists[name_string][i-1])
+                        else:
+                            result.append(result[-1]) # Replace false data with the last data
+                    else:
+                        result.append(self.value_lists[name_string][i])
+                self.value_lists[name_string] = result
+                #print(len(result) == len(self.value_lists[name_string]))
+                #self.value_lists[name_string] = [i[1] if i[0] > i[1] else i[0] for i in (self.value_lists[name_string], result)]
 
 
             generator = PlotGenerator(
