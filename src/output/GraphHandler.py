@@ -168,6 +168,21 @@ class SingleFileGraphHandler:
             category_string = value_type.get_category_string(value_type)
 
             title = self.__get_title(value_type, calculate_full_time(), median)
+            
+            # Replace false data with 0
+            if name_string == "pps_recv" or name_string == "pps_sent":
+                self.value_lists[name_string] = [0 if i > 10000 else i for i in self.value_lists[name_string]] # != i = i-1
+                #self.value_lists[name_string] = [self.value_lists[name_string][i-1] if i > 0 and x > 1000 else x for i, x in enumerate(self.value_lists[name_string])] # Replace false data with the last data
+                
+                #result = []
+                #for i in range(len(self.value_lists[name_string])):
+                    #if self.value_lists[name_string][i] > 1000 and i > 0:
+                        #result.append(self.value_lists[name_string][i-1]) # Replace false data with the last data
+                    #else:
+                        #result.append(self.value_lists[name_string][i])
+                #self.value_lists[name_string] = result
+
+
 
             generator = PlotGenerator(
                 value_type=value_type,
