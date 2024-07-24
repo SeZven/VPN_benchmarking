@@ -206,6 +206,21 @@ class SingleFileGraphHandler:
                 print(name_string)
                 print(sum(self.value_lists[name_string])/len(self.value_lists[name_string]))
 
+            with open("output.txt", "a") as file:
+                file.write(self.short_file_name + "\n")
+
+                if name_string == "bytes_recv" or name_string == "bytes_sent":
+                    file.write(f"{name_string}\n")
+                    file.write(f"{self.value_lists[name_string][-1]}\n")
+                else:
+                    file.write(f"{name_string}\n")
+                    average = round(sum(self.value_lists[name_string]) / len(self.value_lists[name_string]), 2)
+                    #import statistics
+
+                    #smedian = round(statistics.median(self.value_lists[name_string]), 2)
+                    file.write(f"{average}\n")
+                    #file.write(f"{smedian}\n")
+
 
             generator = PlotGenerator(
                 value_type=value_type,
