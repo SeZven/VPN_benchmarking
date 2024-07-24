@@ -198,6 +198,14 @@ class SingleFileGraphHandler:
                 #print(len(result) == len(self.value_lists[name_string]))
                 #self.value_lists[name_string] = [i[1] if i[0] > i[1] else i[0] for i in (self.value_lists[name_string], result)]
 
+            print(self.short_file_name)
+            if name_string == "bytes_recv" or name_string == "bytes_sent":
+                print(name_string)
+                print(self.value_lists[name_string][-1])
+            else:
+                print(name_string)
+                print(sum(self.value_lists[name_string])/len(self.value_lists[name_string]))
+
 
             generator = PlotGenerator(
                 value_type=value_type,
